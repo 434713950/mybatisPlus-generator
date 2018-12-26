@@ -1,8 +1,9 @@
-package com.github.mybatisPlus.generator.plugin.manager;
+package com.github.mybatisPlus.generator.plugin.generator.mybatisplus;
 
 import com.github.mybatisPlus.generator.anno.CommonlyAnnoEnum;
 import com.github.mybatisPlus.generator.comment.JavaCommentTag;
 import com.github.mybatisPlus.generator.plugin.MybatisPlusPackage;
+import com.github.mybatisPlus.generator.plugin.generator.EntityGeneratorAdapter;
 import com.github.mybatisPlus.generator.util.AnnoAdjunctionUtil;
 import com.github.mybatisPlus.generator.util.IOUtil;
 import org.mybatis.generator.api.FullyQualifiedTable;
@@ -12,7 +13,6 @@ import org.mybatis.generator.api.dom.java.JavaVisibility;
 import org.mybatis.generator.api.dom.java.Method;
 import org.mybatis.generator.api.dom.java.TopLevelClass;
 import org.mybatis.generator.config.Context;
-import org.mybatis.generator.config.JDBCConnectionConfiguration;
 import org.mybatis.generator.internal.db.ConnectionFactory;
 import org.mybatis.generator.internal.util.StringUtility;
 
@@ -31,15 +31,14 @@ import java.util.regex.Pattern;
  * @author PengCheng
  * @date 2018/12/25
  */
-public class MybatisPlusEntityManager {
+public class MybatisPlusEntityGenerator implements EntityGeneratorAdapter {
 
     public static final Pattern COMMENT_TABLE_PATTERN = Pattern.compile("COMMENT=\'.*?\'");
 
 
-    public static void generateEntity(TopLevelClass topLevelClass, IntrospectedTable introspectedTable, Context context){
+    @Override
+    public void generate(TopLevelClass topLevelClass, IntrospectedTable introspectedTable, String tableComment){
         FullyQualifiedTable table = introspectedTable.getFullyQualifiedTable();
-        //表注释
-        String tableComment = getTableComment(table,context);
 
         //加注释
         addClassComment(topLevelClass,table,tableComment);
@@ -53,7 +52,7 @@ public class MybatisPlusEntityManager {
      * 添加父类
      * @param topLevelClass
      */
-    private static void addSuper(TopLevelClass topLevelClass){
+    private void addSuper(TopLevelClass topLevelClass){
         topLevelClass.addImportedType(MybatisPlusPackage.MODEL_PACKAGE);
         FullyQualifiedJavaType modelType = new FullyQualifiedJavaType(MybatisPlusPackage.MODEL_PACKAGE);
         modelType.addTypeArgument(topLevelClass.getType());
@@ -78,7 +77,7 @@ public class MybatisPlusEntityManager {
      * @param topLevelClass
      * @param table
      */
-    private static void addClassComment(TopLevelClass topLevelClass, FullyQualifiedTable table, String tableComment) {
+    private void addClassComment(TopLevelClass topLevelClass, FullyQualifiedTable table, String tableComment) {
         topLevelClass.addJavaDocLine("/**");
         if(StringUtility.stringHasValue(tableComment)) {
             topLevelClass.addJavaDocLine(" * <p>" + tableComment + "<p/>");
@@ -94,10 +93,10 @@ public class MybatisPlusEntityManager {
      * @param topLevelClass
      * @param table
      */
-    private static void addClassAnno(TopLevelClass topLevelClass, FullyQualifiedTable table,String tableComment){
+    private void addClassAnno(TopLevelClass topLevelClass, FullyQualifiedTable table,String tableComment){
         AnnoAdjunctionUtil.addClassAnno(topLevelClass, CommonlyAnnoEnum.LOMBOK_DATA);
 
-        Map<String,String> annoContentMap = new HashMap<String,String>();
+        Map<String,String> annoContentMap = new HashMap<>(16);
         annoContentMap.put("chain","true");
         AnnoAdjunctionUtil.addClassAnno(topLevelClass, CommonlyAnnoEnum.LOMBOK_ACCESSOR,annoContentMap);
 
@@ -118,13 +117,14 @@ public class MybatisPlusEntityManager {
      * @param table
      * @return
      */
-    private static String getTableComment(FullyQualifiedTable table, Context context) {
+    private String getTableComment(FullyQualifiedTable table, Context context) {
         String tableComment = "";
         Connection connection = null;
         Statement statement = null;
         ResultSet rs = null;
         try {
-            connection = getConnection(context.getJdbcConnectionConfiguration());
+            connection = ConnectionFactory.getInstance().getConnection(
+                    context.getJdbcConnectionConfiguration());
             statement = connection.createStatement();
             rs = statement.executeQuery("SHOW CREATE TABLE " + table.getIntrospectedTableName());
             if (rs != null && rs.next()) {
@@ -143,11 +143,5 @@ public class MybatisPlusEntityManager {
             IOUtil.close(connection);
         }
         return tableComment;
-    }
-
-    private static Connection getConnection(JDBCConnectionConfiguration jdbcConnectionConfiguration) throws SQLException {
-        Connection connection = ConnectionFactory.getInstance().getConnection(
-                jdbcConnectionConfiguration);
-        return connection;
     }
 }

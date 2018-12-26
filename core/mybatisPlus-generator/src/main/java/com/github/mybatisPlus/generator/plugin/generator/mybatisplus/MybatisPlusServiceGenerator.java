@@ -1,12 +1,14 @@
-package com.github.mybatisPlus.generator.plugin.manager;
+package com.github.mybatisPlus.generator.plugin.generator.mybatisplus;
 
 import com.github.mybatisPlus.generator.anno.CommonlyAnnoEnum;
 import com.github.mybatisPlus.generator.plugin.MybatisPlusPackage;
-import com.github.mybatisPlus.generator.plugin.config.MybatisPlusServiceConfiguration;
+import com.github.mybatisPlus.generator.plugin.config.ServiceConfiguration;
+import com.github.mybatisPlus.generator.plugin.generator.ServiceGeneratorAdapter;
 import com.github.mybatisPlus.generator.util.AnnoAdjunctionUtil;
 import com.github.mybatisPlus.generator.util.CommentTagUtil;
 import com.github.mybatisPlus.generator.util.StringUtil;
 import org.mybatis.generator.api.GeneratedJavaFile;
+import org.mybatis.generator.api.IntrospectedTable;
 import org.mybatis.generator.api.JavaFormatter;
 import org.mybatis.generator.api.dom.java.*;
 
@@ -19,39 +21,71 @@ import java.util.Map;
  * @author PengCheng
  * @date 2018/12/25
  */
-public class MybatisPlusServiceManager {
+public class MybatisPlusServiceGenerator implements ServiceGeneratorAdapter {
 
     private static final String IMPL_PATH_APPEND = "impl";
 
-    public static GeneratedJavaFile generateInterface (TopLevelClass entity, JavaFormatter javaFormatter, MybatisPlusServiceConfiguration configuration){
-        //接口shortName
+    private ServiceConfiguration configuration;
+
+    public MybatisPlusServiceGenerator(ServiceConfiguration configuration) {
+        this.configuration = configuration;
+    }
+
+    @Override
+    public GeneratedJavaFile generateInterface (TopLevelClass entity, IntrospectedTable introspectedTable, JavaFormatter javaFormatter){
+        Interface service =createInterface(entity);
+        addInterfaceSuper(service,entity);
+        addInterfaceComment(service);
+        return createFile(service,javaFormatter);
+    }
+
+
+    @Override
+    public GeneratedJavaFile generateImpl(TopLevelClass entity, Interface mapper, Interface iService, IntrospectedTable introspectedTable, JavaFormatter javaFormatter){
+        TopLevelClass service = createImpl(entity);
+        addImplSuper(service,entity,mapper,iService);
+        addImplComment(service);
+        addImplAnno(service);
+        return createFile(service,javaFormatter);
+    }
+
+    private GeneratedJavaFile createFile(CompilationUnit unit,JavaFormatter javaFormatter){
+        return new GeneratedJavaFile(unit,configuration.getTargetProject(),javaFormatter);
+    }
+
+
+    private Interface createInterface(TopLevelClass entity){
         StringBuilder serviceInterfaceShortName = new StringBuilder()
                 .append("I").append(StringUtil.firstUpperCase(entity.getType().getShortName())).append("Service");
         StringBuilder serviceInterfacePackage = new StringBuilder().append(configuration.getTargetPackage()).append(".").append(serviceInterfaceShortName);
 
         Interface service = new Interface(serviceInterfacePackage.toString());
         service.setVisibility(JavaVisibility.PUBLIC);
+        return service;
+    }
 
+    private void addInterfaceSuper(Interface service,TopLevelClass entity){
         FullyQualifiedJavaType mybatisPlusServiceType = new FullyQualifiedJavaType(MybatisPlusPackage.BASE_SERVICE);
         mybatisPlusServiceType.addTypeArgument(entity.getType());
         service.addSuperInterface(mybatisPlusServiceType);
-
         service.addImportedType(mybatisPlusServiceType);
-
-        CommentTagUtil.addUnifyComment(service);
-
-        return new GeneratedJavaFile(service,configuration.getTargetProject(),javaFormatter);
     }
 
+    private void addInterfaceComment(Interface service){
+        CommentTagUtil.addUnifyComment(service);
+    }
 
-    public static GeneratedJavaFile generatedImpl(TopLevelClass entity, Interface mapper, Interface iService, JavaFormatter javaFormatter,MybatisPlusServiceConfiguration configuration){
+    private TopLevelClass createImpl(TopLevelClass entity){
         StringBuilder serviceClassShortName = new StringBuilder().append(StringUtil.firstUpperCase(entity.getType().getShortName())).append("Service");
         StringBuilder serviceClassPackage = new StringBuilder().append(configuration.getTargetPackage())
-                .append(".").append(IMPL_PATH_APPEND).append(".").append(serviceClassShortName);
+                .append(".").append("impl").append(".").append(serviceClassShortName);
 
         TopLevelClass service = new TopLevelClass(serviceClassPackage.toString());
         service.setVisibility(JavaVisibility.PUBLIC);
+        return service;
+    }
 
+    private void addImplSuper(TopLevelClass service,TopLevelClass entity,Interface mapper,Interface iService){
         FullyQualifiedJavaType mybatisPlusServiceType = new FullyQualifiedJavaType(MybatisPlusPackage.BASE_SERVICE_IMPL);
         mybatisPlusServiceType.addTypeArgument(mapper.getType());
         mybatisPlusServiceType.addTypeArgument(entity.getType());
@@ -60,15 +94,16 @@ public class MybatisPlusServiceManager {
 
         service.addSuperInterface(iService.getType());
         service.addImportedType(iService.getType());
+    }
 
-        //加注释
+    private void addImplComment(TopLevelClass service){
         CommentTagUtil.addUnifyComment(service);
+    }
 
+    private void addImplAnno(TopLevelClass service){
         //加注解
-        Map<String,String> annoContent = new HashMap<String,String>();
-        annoContent.put("value","\""+StringUtil.firstLowerCase(serviceClassShortName.toString())+"\"");
+        Map<String,String> annoContent = new HashMap<>();
+        annoContent.put("value","\""+StringUtil.firstLowerCase(service.getType().getShortName())+"\"");
         AnnoAdjunctionUtil.addClassAnno(service, CommonlyAnnoEnum.SPRING_SERVICE,annoContent);
-
-        return new GeneratedJavaFile(service,configuration.getTargetProject(),javaFormatter);
     }
 }

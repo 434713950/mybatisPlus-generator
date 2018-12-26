@@ -1,7 +1,7 @@
-package com.github.mybatisPlus.generator.plugin.manager;
+package com.github.mybatisPlus.generator.plugin.generator.mybatisplus;
 
 import com.github.mybatisPlus.generator.plugin.MybatisPlusPackage;
-import com.github.mybatisPlus.generator.plugin.config.MybatisPlusMapperConfiguration;
+import com.github.mybatisPlus.generator.plugin.generator.MapperGeneratorAdapter;
 import com.github.mybatisPlus.generator.util.CommentTagUtil;
 import org.mybatis.generator.api.dom.java.FullyQualifiedJavaType;
 import org.mybatis.generator.api.dom.java.Interface;
@@ -13,9 +13,10 @@ import org.mybatis.generator.api.dom.java.TopLevelClass;
  * @author PengCheng
  * @date 2018/12/25
  */
-public class MybatisPlusMapperManager {
+public class MybatisPlusMapperGenerator implements MapperGeneratorAdapter {
 
-    public static void generateMapper(Interface interfaze, TopLevelClass entity, MybatisPlusMapperConfiguration configuration) {
+    @Override
+    public void generate(Interface interfaze, TopLevelClass entity) {
         FullyQualifiedJavaType type = new FullyQualifiedJavaType(MybatisPlusPackage.BASE_MAPPER_PACKAGE);
         type.addTypeArgument(entity.getType());
         interfaze.addSuperInterface(type);
