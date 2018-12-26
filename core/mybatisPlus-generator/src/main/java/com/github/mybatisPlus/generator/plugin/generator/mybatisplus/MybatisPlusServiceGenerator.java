@@ -47,12 +47,12 @@ public class MybatisPlusServiceGenerator implements ServiceGeneratorAdapter {
         return createFile(service,javaFormatter);
     }
 
-    private GeneratedJavaFile createFile(CompilationUnit unit,JavaFormatter javaFormatter){
+    protected GeneratedJavaFile createFile(CompilationUnit unit,JavaFormatter javaFormatter){
         return new GeneratedJavaFile(unit,configuration.getTargetProject(),javaFormatter);
     }
 
 
-    private Interface createInterface(TopLevelClass entity){
+    protected Interface createInterface(TopLevelClass entity){
         StringBuilder serviceInterfaceShortName = new StringBuilder()
                 .append("I").append(StringUtil.firstUpperCase(entity.getType().getShortName())).append("Service");
         StringBuilder serviceInterfacePackage = new StringBuilder().append(configuration.getTargetPackage()).append(".").append(serviceInterfaceShortName);
@@ -62,18 +62,18 @@ public class MybatisPlusServiceGenerator implements ServiceGeneratorAdapter {
         return service;
     }
 
-    private void addInterfaceSuper(Interface service,TopLevelClass entity){
+    protected void addInterfaceSuper(Interface service,TopLevelClass entity){
         FullyQualifiedJavaType mybatisPlusServiceType = new FullyQualifiedJavaType(MybatisPlusPackage.BASE_SERVICE);
         mybatisPlusServiceType.addTypeArgument(entity.getType());
         service.addSuperInterface(mybatisPlusServiceType);
         service.addImportedType(mybatisPlusServiceType);
     }
 
-    private void addInterfaceComment(Interface service){
+    protected void addInterfaceComment(Interface service){
         CommentTagUtil.addUnifyComment(service);
     }
 
-    private TopLevelClass createImpl(TopLevelClass entity){
+    protected TopLevelClass createImpl(TopLevelClass entity){
         StringBuilder serviceClassShortName = new StringBuilder().append(StringUtil.firstUpperCase(entity.getType().getShortName())).append("Service");
         StringBuilder serviceClassPackage = new StringBuilder().append(configuration.getTargetPackage())
                 .append(".").append("impl").append(".").append(serviceClassShortName);
@@ -83,7 +83,7 @@ public class MybatisPlusServiceGenerator implements ServiceGeneratorAdapter {
         return service;
     }
 
-    private void addImplSuper(TopLevelClass service,TopLevelClass entity,Interface mapper,Interface iService){
+    protected void addImplSuper(TopLevelClass service,TopLevelClass entity,Interface mapper,Interface iService){
         FullyQualifiedJavaType mybatisPlusServiceType = new FullyQualifiedJavaType(MybatisPlusPackage.BASE_SERVICE_IMPL);
         mybatisPlusServiceType.addTypeArgument(mapper.getType());
         mybatisPlusServiceType.addTypeArgument(entity.getType());
@@ -94,11 +94,11 @@ public class MybatisPlusServiceGenerator implements ServiceGeneratorAdapter {
         service.addImportedType(iService.getType());
     }
 
-    private void addImplComment(TopLevelClass service){
+    protected void addImplComment(TopLevelClass service){
         CommentTagUtil.addUnifyComment(service);
     }
 
-    private void addImplAnno(TopLevelClass service){
+    protected void addImplAnno(TopLevelClass service){
         //加注解
         Map<String,String> annoContent = new HashMap<>();
         annoContent.put("value","\""+StringUtil.firstLowerCase(service.getType().getShortName())+"\"");

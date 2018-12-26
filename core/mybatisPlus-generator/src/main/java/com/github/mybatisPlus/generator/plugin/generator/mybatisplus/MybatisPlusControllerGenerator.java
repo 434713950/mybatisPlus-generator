@@ -38,7 +38,7 @@ public class MybatisPlusControllerGenerator implements ControllerGeneratorAdapte
         return createFile(controller,javaFormatter);
     }
 
-    private TopLevelClass createController(TopLevelClass entity){
+    protected TopLevelClass createController(TopLevelClass entity){
         StringBuilder classShortName = new StringBuilder().append(StringUtil.firstUpperCase(entity.getType().getShortName())).append("Controller");
         StringBuilder classPackage = new StringBuilder().append(configuration.getTargetPackage())
                 .append(".").append(classShortName);
@@ -48,7 +48,7 @@ public class MybatisPlusControllerGenerator implements ControllerGeneratorAdapte
         return controller;
     }
 
-    private void addField(TopLevelClass controller,Interface iService){
+    protected void addField(TopLevelClass controller,Interface iService){
         Field field = new Field(StringUtil.firstLowerCase(iService.getType().getShortName().substring(1)),iService.getType());
         field.setVisibility(JavaVisibility.PRIVATE);
         AnnoAdjunctionUtil.addFieldAnno(field,controller, CommonlyAnnoEnum.SPRING_AUTOWIRED);
@@ -56,7 +56,7 @@ public class MybatisPlusControllerGenerator implements ControllerGeneratorAdapte
         controller.addImportedType(iService.getType());
     }
 
-    private void addControllerAnno(TopLevelClass controller,IntrospectedTable introspectedTable,String tableComment){
+    protected void addControllerAnno(TopLevelClass controller,IntrospectedTable introspectedTable,String tableComment){
         AnnoAdjunctionUtil.addClassAnno(controller,CommonlyAnnoEnum.SPRING_CONTROLLER);
         FullyQualifiedTable table = introspectedTable.getFullyQualifiedTable();
 
@@ -72,7 +72,7 @@ public class MybatisPlusControllerGenerator implements ControllerGeneratorAdapte
         annoContent.clear();
     }
 
-    private GeneratedJavaFile createFile(CompilationUnit unit, JavaFormatter javaFormatter){
+    protected GeneratedJavaFile createFile(CompilationUnit unit, JavaFormatter javaFormatter){
         return new GeneratedJavaFile(unit,configuration.getTargetProject(),javaFormatter);
     }
 }

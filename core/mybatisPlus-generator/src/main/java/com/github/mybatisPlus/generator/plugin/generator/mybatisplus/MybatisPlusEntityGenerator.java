@@ -5,25 +5,16 @@ import com.github.mybatisPlus.generator.comment.JavaCommentTag;
 import com.github.mybatisPlus.generator.plugin.MybatisPlusPackage;
 import com.github.mybatisPlus.generator.plugin.generator.EntityGeneratorAdapter;
 import com.github.mybatisPlus.generator.util.AnnoAdjunctionUtil;
-import com.github.mybatisPlus.generator.util.IOUtil;
 import org.mybatis.generator.api.FullyQualifiedTable;
 import org.mybatis.generator.api.IntrospectedTable;
 import org.mybatis.generator.api.dom.java.FullyQualifiedJavaType;
 import org.mybatis.generator.api.dom.java.JavaVisibility;
 import org.mybatis.generator.api.dom.java.Method;
 import org.mybatis.generator.api.dom.java.TopLevelClass;
-import org.mybatis.generator.config.Context;
-import org.mybatis.generator.internal.db.ConnectionFactory;
 import org.mybatis.generator.internal.util.StringUtility;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * <p></p>
@@ -32,9 +23,6 @@ import java.util.regex.Pattern;
  * @date 2018/12/25
  */
 public class MybatisPlusEntityGenerator implements EntityGeneratorAdapter {
-
-    public static final Pattern COMMENT_TABLE_PATTERN = Pattern.compile("COMMENT=\'.*?\'");
-
 
     @Override
     public void generate(TopLevelClass topLevelClass, IntrospectedTable introspectedTable, String tableComment){
@@ -52,7 +40,7 @@ public class MybatisPlusEntityGenerator implements EntityGeneratorAdapter {
      * 添加父类
      * @param topLevelClass
      */
-    private void addSuper(TopLevelClass topLevelClass){
+    protected void addSuper(TopLevelClass topLevelClass){
         topLevelClass.addImportedType(MybatisPlusPackage.MODEL_PACKAGE);
         FullyQualifiedJavaType modelType = new FullyQualifiedJavaType(MybatisPlusPackage.MODEL_PACKAGE);
         modelType.addTypeArgument(topLevelClass.getType());
@@ -77,7 +65,7 @@ public class MybatisPlusEntityGenerator implements EntityGeneratorAdapter {
      * @param topLevelClass
      * @param table
      */
-    private void addClassComment(TopLevelClass topLevelClass, FullyQualifiedTable table, String tableComment) {
+    protected void addClassComment(TopLevelClass topLevelClass, FullyQualifiedTable table, String tableComment) {
         topLevelClass.addJavaDocLine("/**");
         if(StringUtility.stringHasValue(tableComment)) {
             topLevelClass.addJavaDocLine(" * <p>" + tableComment + "<p/>");
@@ -93,7 +81,7 @@ public class MybatisPlusEntityGenerator implements EntityGeneratorAdapter {
      * @param topLevelClass
      * @param table
      */
-    private void addClassAnno(TopLevelClass topLevelClass, FullyQualifiedTable table,String tableComment){
+    protected void addClassAnno(TopLevelClass topLevelClass, FullyQualifiedTable table,String tableComment){
         AnnoAdjunctionUtil.addClassAnno(topLevelClass, CommonlyAnnoEnum.LOMBOK_DATA);
 
         Map<String,String> annoContentMap = new HashMap<>(16);
@@ -108,40 +96,5 @@ public class MybatisPlusEntityGenerator implements EntityGeneratorAdapter {
         annoContentMap.put("value","\""+topLevelClass.getType().getShortName()+"\"");
         annoContentMap.put("description","\""+tableComment+"\"");
         AnnoAdjunctionUtil.addClassAnno(topLevelClass, CommonlyAnnoEnum.SWAGGER_API_MODEL,annoContentMap);
-    }
-
-
-
-    /**
-     * 从数据库中获取表的注释
-     * @param table
-     * @return
-     */
-    private String getTableComment(FullyQualifiedTable table, Context context) {
-        String tableComment = "";
-        Connection connection = null;
-        Statement statement = null;
-        ResultSet rs = null;
-        try {
-            connection = ConnectionFactory.getInstance().getConnection(
-                    context.getJdbcConnectionConfiguration());
-            statement = connection.createStatement();
-            rs = statement.executeQuery("SHOW CREATE TABLE " + table.getIntrospectedTableName());
-            if (rs != null && rs.next()) {
-                String createDDL = rs.getString(2);
-
-                Matcher matcher = COMMENT_TABLE_PATTERN.matcher(createDDL);
-                if (matcher.find()){
-                    tableComment = matcher.group().split("\'")[1];
-                }
-            }
-        } catch (SQLException e) {
-            //ignore
-        } finally {
-            IOUtil.close(rs);
-            IOUtil.close(statement);
-            IOUtil.close(connection);
-        }
-        return tableComment;
     }
 }
