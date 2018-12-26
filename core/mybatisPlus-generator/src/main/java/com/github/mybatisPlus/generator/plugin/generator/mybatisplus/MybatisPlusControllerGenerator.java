@@ -22,7 +22,7 @@ import java.util.Map;
  */
 public class MybatisPlusControllerGenerator implements ControllerGeneratorAdapter {
 
-    private ControllerConfiguration configuration;
+    protected ControllerConfiguration configuration;
 
     public MybatisPlusControllerGenerator(ControllerConfiguration configuration) {
         this.configuration = configuration;

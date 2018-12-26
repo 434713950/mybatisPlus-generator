@@ -23,9 +23,7 @@ import java.util.Map;
  */
 public class MybatisPlusServiceGenerator implements ServiceGeneratorAdapter {
 
-    private static final String IMPL_PATH_APPEND = "impl";
-
-    private ServiceConfiguration configuration;
+    protected ServiceConfiguration configuration;
 
     public MybatisPlusServiceGenerator(ServiceConfiguration configuration) {
         this.configuration = configuration;
