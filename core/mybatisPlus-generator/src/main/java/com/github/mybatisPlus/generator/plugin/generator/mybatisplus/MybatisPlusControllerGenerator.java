@@ -32,7 +32,7 @@ public class MybatisPlusControllerGenerator implements ControllerGeneratorAdapte
     public GeneratedJavaFile generate(TopLevelClass entity, Interface iService, IntrospectedTable introspectedTable, JavaFormatter javaFormatter, String tableComment) {
         TopLevelClass controller = createController(entity);
         addField(controller,iService);
-
+        addSuper(controller);
         addControllerAnno(controller,introspectedTable,tableComment);
 
         return createFile(controller,javaFormatter);
@@ -47,6 +47,8 @@ public class MybatisPlusControllerGenerator implements ControllerGeneratorAdapte
         controller.setVisibility(JavaVisibility.PUBLIC);
         return controller;
     }
+
+    protected void addSuper(TopLevelClass controller){};
 
     protected void addField(TopLevelClass controller,Interface iService){
         Field field = new Field(StringUtil.firstLowerCase(iService.getType().getShortName().substring(1)),iService.getType());
