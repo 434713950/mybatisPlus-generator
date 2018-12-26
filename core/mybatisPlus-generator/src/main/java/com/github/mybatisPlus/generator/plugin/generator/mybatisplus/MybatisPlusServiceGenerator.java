@@ -1,7 +1,7 @@
 package com.github.mybatisPlus.generator.plugin.generator.mybatisplus;
 
 import com.github.mybatisPlus.generator.anno.CommonlyAnnoEnum;
-import com.github.mybatisPlus.generator.plugin.MybatisPlusPackage;
+import com.github.mybatisPlus.generator.plugin.constant.MybatisPlusPackage;
 import com.github.mybatisPlus.generator.plugin.config.ServiceConfiguration;
 import com.github.mybatisPlus.generator.plugin.generator.ServiceGeneratorAdapter;
 import com.github.mybatisPlus.generator.util.AnnoAdjunctionUtil;

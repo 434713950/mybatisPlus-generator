@@ -1,4 +1,4 @@
-package com.github.mybatisPlus.generator.plugin;
+package com.github.mybatisPlus.generator.plugin.constant;
 
 /**
  * <p></p>

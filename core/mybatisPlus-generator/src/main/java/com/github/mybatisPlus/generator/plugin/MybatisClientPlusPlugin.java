@@ -27,7 +27,7 @@ import java.util.Map;
  */
 public class MybatisClientPlusPlugin extends PluginAdapter {
 
-    private BusinessGenerateContext businessGenerateContext;
+    protected BusinessGenerateContext businessGenerateContext;
 
     /**
      * entity对象生成

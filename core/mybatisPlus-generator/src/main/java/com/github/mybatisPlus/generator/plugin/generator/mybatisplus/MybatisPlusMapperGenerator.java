@@ -1,6 +1,6 @@
 package com.github.mybatisPlus.generator.plugin.generator.mybatisplus;
 
-import com.github.mybatisPlus.generator.plugin.MybatisPlusPackage;
+import com.github.mybatisPlus.generator.plugin.constant.MybatisPlusPackage;
 import com.github.mybatisPlus.generator.plugin.generator.MapperGeneratorAdapter;
 import com.github.mybatisPlus.generator.util.CommentTagUtil;
 import org.mybatis.generator.api.dom.java.FullyQualifiedJavaType;
